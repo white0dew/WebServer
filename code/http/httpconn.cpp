@@ -1,8 +1,4 @@
-/*
- * @Author       : mark
- * @Date         : 2020-06-15
- * @copyleft Apache 2.0
- */ 
+
 #include "httpconn.h"
 using namespace std;
 

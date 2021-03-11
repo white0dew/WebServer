@@ -1,8 +1,4 @@
-/*
- * @Author       : mark
- * @Date         : 2020-06-27
- * @copyleft Apache 2.0
- */ 
+
 #include "httpresponse.h"
 
 using namespace std;
