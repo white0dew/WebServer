@@ -10,6 +10,7 @@
  * C++11
  * MySql
 ## 目录树
+```
 .
 ├── code           源代码
 │   ├── buffer
@@ -38,15 +39,24 @@
 ├── Makefile
 ├── LICENSE
 └── readme.md
+```
 ## 项目启动
 ### 配置Mysql数据库
 ``` 
-// 建立yourdb库create database yourdb;​
-// 创建user表USE yourdb;CREATE TABLE user(    username char(50) NULL,    password char(50) NULL)ENGINE=InnoDB;​
-// 添加数据INSERT INTO user(username, password) VALUES('name', 'password');
+// 建立yourdb库
+create database yourdb;​
+// 创建user表USE yourdb;
+CREATE TABLE user(username char(50) NULL, password char(50) NULL)ENGINE=InnoDB;​
+// 添加数据
+INSERT INTO user(username, password) VALUES('name', 'password');
 ```
 ### 编译运行
 ``` 
 make
 ./bin/server
 ```
+
+## 致谢
+Linux高性能服务器编程，游双著.
+[@qinguoyi](https://github.com/qinguoyi/TinyWebServer)
+C++11的TinyWebServer
