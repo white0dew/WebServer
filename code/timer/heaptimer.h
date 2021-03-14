@@ -1,8 +1,3 @@
-/*
- * @Author       : mark
- * @Date         : 2020-06-17
- * @copyleft Apache 2.0
- */ 
 #ifndef HEAP_TIMER_H
 #define HEAP_TIMER_H
 
