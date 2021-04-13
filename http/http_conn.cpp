@@ -224,6 +224,7 @@ bool http_conn::read_once()
             bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
             if (bytes_read == -1)
             {
+                //非阻塞ET模式下，需要一次性将数据读完
                 if (errno == EAGAIN || errno == EWOULDBLOCK)
                     break;
                 return false;
@@ -685,18 +686,23 @@ bool http_conn::process_write(HTTP_CODE ret)
     bytes_to_send = m_write_idx;
     return true;
 }
+//处理http报文请求与报文响应
 void http_conn::process()
 {
+    //NO_REQUEST，表示请求不完整，需要继续接收请求数据
     HTTP_CODE read_ret = process_read();
     if (read_ret == NO_REQUEST)
     {
+        //注册并监听读事件
         modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode);
         return;
     }
+    //调用process_write完成报文响应
     bool write_ret = process_write(read_ret);
     if (!write_ret)
     {
         close_conn();
     }
+    //注册并监听写事件
     modfd(m_epollfd, m_sockfd, EPOLLOUT, m_TRIGMode);
 }

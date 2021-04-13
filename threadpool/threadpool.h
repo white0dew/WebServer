@@ -31,7 +31,7 @@ private:
     locker m_queuelocker;       //保护请求队列的互斥锁
     sem m_queuestat;            //是否有任务需要处理
     connection_pool *m_connPool;  //数据库
-    int m_actor_model;          //模型切换（这个切换是指？）
+    int m_actor_model;          //模型切换（这个切换是指Reactor/Proactor）
 };
 template <typename T>
 threadpool<T>::threadpool( int actor_model, connection_pool *connPool, int thread_number, int max_requests) : m_actor_model(actor_model),m_thread_number(thread_number), m_max_requests(max_requests), m_threads(NULL),m_connPool(connPool)
@@ -84,7 +84,8 @@ bool threadpool<T>::append(T *request, int state)
     return true;
 }
 template <typename T>
-bool threadpool<T>::append_p(T *request)//有关模板的性质，先看http的解决方式（因为在这运用了它）
+//有关模板的性质，先看http的解决方式（因为在这运用了它）
+bool threadpool<T>::append_p(T *request)
 {
     m_queuelocker.lock();
     if (m_workqueue.size() >= m_max_requests)
@@ -121,6 +122,7 @@ void threadpool<T>::run()
         m_queuelocker.unlock();
         if (!request)
             continue;
+        //Reactor
         if (1 == m_actor_model)
         {
             if (0 == request->m_state)
@@ -150,6 +152,7 @@ void threadpool<T>::run()
                 }
             }
         }
+        //default:Proactor
         else
         {
             connectionRAII mysqlcon(&request->mysql, m_connPool);

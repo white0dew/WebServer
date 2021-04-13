@@ -229,6 +229,7 @@ bool WebServer::dealclinetdata()
         timer(connfd, client_address);
     }
 
+    // wtf???
     else
     {
         while (1)
@@ -304,7 +305,6 @@ void WebServer::dealwithread(int sockfd)
 
         //若监测到读事件，将该事件放入请求队列
         m_pool->append(users + sockfd, 0);
-
         while (true)
         {
             if (1 == users[sockfd].improv)
@@ -325,7 +325,6 @@ void WebServer::dealwithread(int sockfd)
         if (users[sockfd].read_once())
         {
             LOG_INFO("deal with the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
-
             //若监测到读事件，将该事件放入请求队列
             m_pool->append_p(users + sockfd);
 
@@ -396,17 +395,17 @@ void WebServer::eventLoop()
 
     while (!stop_server)
     {
+        //等待所监控文件描述符上有事件的产生
         int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
         if (number < 0 && errno != EINTR)
         {
             LOG_ERROR("%s", "epoll failure");
             break;
         }
-
+        //对所有就绪事件进行处理
         for (int i = 0; i < number; i++)
         {
             int sockfd = events[i].data.fd;
-
             //处理新到的客户连接
             if (sockfd == m_listenfd)
             {
@@ -414,6 +413,7 @@ void WebServer::eventLoop()
                 if (false == flag)
                     continue;
             }
+            //处理异常事件
             else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
             {
                 //服务器端关闭连接，移除对应的定时器
