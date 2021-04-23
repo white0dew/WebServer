@@ -25,6 +25,7 @@ public:
 	//对于多线程而言，多个线程可能同时访问到该静态变量，并发现其没有被初始化（C++实现机制是）
 	//（该看静态变量内部一标志位是为1，为1则说明已被初始化）
 	//多个线程同时判定其没有初始化而后均初始化就会造成错误（即它不是一个原子操作）
+	//PS-C++11之后局部静态变量线程安全
 	static connection_pool *GetInstance();
 
 	void init(string url, string User, string PassWord, string DataBaseName, int Port, int MaxConn, int close_log); 

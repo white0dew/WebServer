@@ -20,7 +20,7 @@ public:
 
 private:
     /*工作线程运行的函数，它不断从工作队列中取出任务并执行之*/
-    static void *worker(void *arg);//为什么要用静态成员函数呢？
+    static void *worker(void *arg);//为什么要用静态成员函数呢-----class specific
     void run();
 
 private:

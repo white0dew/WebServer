@@ -212,6 +212,7 @@ bool WebServer::dealclinetdata()
 {
     struct sockaddr_in client_address;
     socklen_t client_addrlength = sizeof(client_address);
+    //LT
     if (0 == m_LISTENTrigmode)
     {
         int connfd = accept(m_listenfd, (struct sockaddr *)&client_address, &client_addrlength);
@@ -229,7 +230,7 @@ bool WebServer::dealclinetdata()
         timer(connfd, client_address);
     }
 
-    // wtf???
+    // wtf???_ET
     else
     {
         while (1)
@@ -259,9 +260,12 @@ bool WebServer::dealwithsignal(bool &timeout, bool &stop_server)
     int ret = 0;
     int sig;
     char signals[1024];
+    //从管道读端读出信号值，成功返回字节数，失败返回-1
+    //正常情况下，这里的ret返回值总是1，只有14和15两个ASCII码对应的字符
     ret = recv(m_pipefd[0], signals, sizeof(signals), 0);
     if (ret == -1)
     {
+        // handle the error
         return false;
     }
     else if (ret == 0)
@@ -270,10 +274,14 @@ bool WebServer::dealwithsignal(bool &timeout, bool &stop_server)
     }
     else
     {
+        //处理信号值对应的逻辑
         for (int i = 0; i < ret; ++i)
         {
+            
+            //这里面明明是字符
             switch (signals[i])
             {
+            //这里是整型
             case SIGALRM:
             {
                 timeout = true;
