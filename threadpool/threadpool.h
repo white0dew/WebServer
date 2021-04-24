@@ -109,6 +109,7 @@ void *threadpool<T>::worker(void *arg)
     //调用时 *arg是this！
     //所以该操作其实是获取threadpool对象地址
     threadpool *pool = (threadpool *)arg;
+    //线程池中每一个线程创建时都会调用run()，睡眠在队列中
     pool->run();
     return pool;
 }

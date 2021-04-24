@@ -179,6 +179,7 @@ void WebServer::timer(int connfd, struct sockaddr_in client_address)
     timer->user_data = &users_timer[connfd];
     timer->cb_func = cb_func;
     time_t cur = time(NULL);
+    //TIMESLOT:最小时间间隔单位为5s
     timer->expire = cur + 3 * TIMESLOT;
     users_timer[connfd].timer = timer;
     utils.m_timer_lst.add_timer(timer);
@@ -254,7 +255,7 @@ bool WebServer::dealclinetdata()
     return true;
 }
 
-//http 处理信号
+//处理定时器信号,set the timeout ture
 bool WebServer::dealwithsignal(bool &timeout, bool &stop_server)
 {
     int ret = 0;
@@ -287,6 +288,7 @@ bool WebServer::dealwithsignal(bool &timeout, bool &stop_server)
                 timeout = true;
                 break;
             }
+            //关闭服务器
             case SIGTERM:
             {
                 stop_server = true;
@@ -298,9 +300,10 @@ bool WebServer::dealwithsignal(bool &timeout, bool &stop_server)
     return true;
 }
 
-//线程处理模块
+//处理客户连接上接收到的数据
 void WebServer::dealwithread(int sockfd)
 {
+    //创建定时器临时变量，将该连接对应的定时器取出来
     util_timer *timer = users_timer[sockfd].timer;
 
     //reactor
@@ -308,6 +311,7 @@ void WebServer::dealwithread(int sockfd)
     {
         if (timer)
         {
+            //将定时器往后延迟3个单位
             adjust_timer(timer);
         }
 
@@ -428,9 +432,10 @@ void WebServer::eventLoop()
                 util_timer *timer = users_timer[sockfd].timer;
                 deal_timer(timer, sockfd);
             }
-            //处理信号
+            //处理定时器信号
             else if ((sockfd == m_pipefd[0]) && (events[i].events & EPOLLIN))
             {
+                //接收到SIGALRM信号，timeout设置为True
                 bool flag = dealwithsignal(timeout, stop_server);
                 if (false == flag)
                     LOG_ERROR("%s", "dealclientdata failure");
@@ -440,17 +445,19 @@ void WebServer::eventLoop()
             {
                 dealwithread(sockfd);
             }
+            //处理客户连接上send的数据
             else if (events[i].events & EPOLLOUT)
             {
                 dealwithwrite(sockfd);
             }
         }
+
+        //处理定时器为非必须事件，收到信号并不是立马处理
+        //完成读写事件后，再进行处理
         if (timeout)
         {
             utils.timer_handler();
-
             LOG_INFO("%s", "timer tick");
-
             timeout = false;
         }
     }
