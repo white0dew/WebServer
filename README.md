@@ -5,73 +5,13 @@ TinyWebServer
 Linux下基于C++的轻量级Web服务器注释、修改版本.
 原项目来自:https://github.com/qinguoyi/TinyWebServer
 
-** 有什么特点？ **
+**有什么特点？**
 * 使用 **线程池 + 非阻塞socket + epoll(ET和LT均实现) + 事件处理(Reactor和模拟Proactor均实现)** 的并发模型
 * 使用**状态机**解析HTTP请求报文，支持解析**GET和POST**请求
 * 访问服务器数据库实现web端用户**注册、登录**功能，可以请求播放服务器**图片和视频文件**
 * 实现**同步/异步日志系统**，记录服务器运行状态
 * 经Webbench压力测试可以实现**上万的并发连接**数据交换
-
-目录
 -----
-
-| [框架](#框架) | [Demo演示](#Demo演示) | [压力测试](#压力测试) |[源码下载](#源码下载) | [快速运行](#快速运行) | [个性化运行](#个性化运行) |[致谢](#致谢) |
-|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-
-
-框架
--------------
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0j1atq5hj30g60lm0w4.jpg" height="765"/> </div>
-
-Demo演示
-----------
-> * 注册演示
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0iz0dkleg30m80bxjyj.gif" height="429"/> </div>
-
-> * 登录演示
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0izcc0r1g30m80bxn6a.gif" height="429"/> </div>
-
-> * 请求图片文件演示(6M)
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0juxrnlfg30go07x4qr.gif" height="429"/> </div>
-
-> * 请求视频文件演示(39M)
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1ge0jtxie8ng30go07xb2b.gif" height="429"/> </div>
-
-
-压力测试
--------------
-在**关闭日志（防止日志信息过大）**后，使用Webbench对服务器进行压力测试，对listenfd和connfd分别采用ET和LT模式，均可实现上万的并发连接，下面列出的是两者组合后的测试结果. 
-
-> * Proactor，LT + LT，93251 QPS
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1gfjqu2hptkj30gz07474n.jpg" height="201"/> </div>
-
-> * Proactor，LT + ET，97459 QPS
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1gfjr1xppdgj30h206zdg6.jpg" height="201"/> </div>
-
-> * Proactor，ET + LT，80498 QPS
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1gfjr24vmjtj30gz0720t3.jpg" height="201"/> </div>
-
-> * Proactor，ET + ET，92167 QPS
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1gfjrflrebdj30gz06z0t3.jpg" height="201"/> </div>
-
-> * Reactor，LT + ET，69175 QPS
-
-<div align=center><img src="http://ww1.sinaimg.cn/large/005TJ2c7ly1gfjr1humcbj30h207474n.jpg" height="201"/> </div>
-
-> * 并发连接总数：10000
-> * 访问服务器时间：5s
-> * 所有访问均成功
-
-**注意：** 使用本项目的webbench进行压测时，若报错显示webbench命令找不到，将可执行文件webbench删除后，重新编译即可。
-
 快速运行
 ------------
 * 服务器测试环境
@@ -109,19 +49,19 @@ Demo演示
     string databasename = "yourdb";
     ```
 
-* build
+* build 编译项目
 
     ```C++
     sh ./build.sh
     ```
 
-* 启动server
+* 启动server服务器项目
 
     ```C++
     ./server
     ```
 
-* 浏览器端
+* 浏览器端 打开指定网页
 
     ```C++
     127.0.0.1:9006
@@ -178,5 +118,4 @@ Demo演示
 致谢
 ------------
 Linux高性能服务器编程，游双著.
-
 源码来自：https://github.com/qinguoyi/TinyWebServer

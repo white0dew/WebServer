@@ -1,5 +1,6 @@
 #include "config.h"
 
+//服务器主程序，调用WebServer类
 int main(int argc, char *argv[])
 {
     //需要修改的数据库信息,登录名,密码,库名
