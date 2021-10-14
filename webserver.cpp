@@ -1,9 +1,9 @@
 #include "webserver.h"
 
-//主要完成服务器初始化：http连接、根目录、定时器
+//主要完成服务器初始化：http连接、设置根目录、开启定时器对象
 WebServer::WebServer()
 {
-    //http_conn类对象
+    //http_conn最大连接数
     users = new http_conn[MAX_FD];
 
     //root文件夹路径
@@ -47,7 +47,7 @@ void WebServer::init(int port, string user, string passWord, string databaseName
     m_actormodel = actor_model;
 }
 
-//设置epoll的触发模式
+//设置epoll的触发模式：ET、LT
 void WebServer::trig_mode()
 {
     //LT + LT
@@ -76,12 +76,12 @@ void WebServer::trig_mode()
     }
 }
 
-//初始化日志
+//初始化日志系统
 void WebServer::log_write()
 {
     if (0 == m_close_log)
     {
-        //初始化日志
+        //确定日志类型：同步/异步
         if (1 == m_log_write)
             Log::get_instance()->init("./ServerLog", m_close_log, 2000, 800000, 800);
         else
@@ -92,7 +92,7 @@ void WebServer::log_write()
 //初始化数据库连接池
 void WebServer::sql_pool()
 {
-    //初始化数据库连接池
+    //单例模式获取唯一实例
     m_connPool = connection_pool::GetInstance();
     m_connPool->init("localhost", m_user, m_passWord, m_databaseName, 3306, m_sql_num, m_close_log);
 
@@ -107,14 +107,16 @@ void WebServer::thread_pool()
     m_pool = new threadpool<http_conn>(m_actormodel, m_connPool, m_thread_num);
 }
 
-//创建网络编程
+//创建网络编程：Socket网络编程基础步骤
 void WebServer::eventListen()
 {
-    //网络编程基础步骤
+    //SOCK_STREAM 表示使用面向字节流的TCP协议
     m_listenfd = socket(PF_INET, SOCK_STREAM, 0);
     assert(m_listenfd >= 0);
 
     //优雅关闭连接
+    //有关setsocket函数可以参考：
+    //https://baike.baidu.com/item/setsockopt/10069288?fr=aladdin
     if (0 == m_OPT_LINGER)
     {
         struct linger tmp = {0, 1};
@@ -137,9 +139,11 @@ void WebServer::eventListen()
     setsockopt(m_listenfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
     ret = bind(m_listenfd, (struct sockaddr *)&address, sizeof(address));
     assert(ret >= 0);
+    //表示已连接和未连接的最大队列数总和为5
     ret = listen(m_listenfd, 5);
     assert(ret >= 0);
 
+    //设置服务器的最小时间间隙
     utils.init(TIMESLOT);
 
     //epoll创建内核事件表
@@ -150,6 +154,8 @@ void WebServer::eventListen()
     utils.addfd(m_epollfd, m_listenfd, false, m_LISTENTrigmode);
     http_conn::m_epollfd = m_epollfd;
 
+    //socketpair()函数用于创建一对无名的、相互连接的套接子。
+    //详情：https://blog.csdn.net/weixin_40039738/article/details/81095013
     ret = socketpair(PF_UNIX, SOCK_STREAM, 0, m_pipefd);
     assert(ret != -1);
     utils.setnonblocking(m_pipefd[1]);
@@ -166,7 +172,7 @@ void WebServer::eventListen()
     Utils::u_epollfd = m_epollfd;
 }
 
-//初始化定时器
+//创建一个定时器节点，将连接信息挂载
 void WebServer::timer(int connfd, struct sockaddr_in client_address)
 {
     users[connfd].init(connfd, client_address, m_root, m_CONNTrigmode, m_close_log, m_user, m_passWord, m_databaseName);
@@ -185,7 +191,7 @@ void WebServer::timer(int connfd, struct sockaddr_in client_address)
     utils.m_timer_lst.add_timer(timer);
 }
 
-//若有数据传输，则将定时器往后延迟3个单位
+//若数据活跃，则将定时器节点往后延迟3个时间单位
 //并对新的定时器在链表上的位置进行调整
 void WebServer::adjust_timer(util_timer *timer)
 {
@@ -196,7 +202,7 @@ void WebServer::adjust_timer(util_timer *timer)
     LOG_INFO("%s", "adjust timer once");
 }
 
-//关闭定时器
+//删除定时器节点，关闭连接
 void WebServer::deal_timer(util_timer *timer, int sockfd)
 {
     timer->cb_func(&users_timer[sockfd]);
@@ -231,9 +237,10 @@ bool WebServer::dealclinetdata()
         timer(connfd, client_address);
     }
 
-    // wtf???_ET
+    // ET
     else
     {
+        //边缘触发需要一直accept直到为空
         while (1)
         {
             int connfd = accept(m_listenfd, (struct sockaddr *)&client_address, &client_addrlength);
@@ -319,8 +326,10 @@ void WebServer::dealwithread(int sockfd)
         m_pool->append(users + sockfd, 0);
         while (true)
         {
+            //是否正在处理中
             if (1 == users[sockfd].improv)
             {
+                //事件类型关闭连接
                 if (1 == users[sockfd].timer_flag)
                 {
                     deal_timer(timer, sockfd);
@@ -333,12 +342,12 @@ void WebServer::dealwithread(int sockfd)
     }
     //proactor
     else
-    {
-        
+    {   
+        //先读取数据，再放进请求队列
         if (users[sockfd].read_once())
         {
             LOG_INFO("deal with the client(%s)", inet_ntoa(users[sockfd].get_address()->sin_addr));
-            //若监测到读事件，将该事件放入请求队列
+            //将该事件放入请求队列
             m_pool->append_p(users + sockfd);
             if (timer)
             {
@@ -409,6 +418,11 @@ void WebServer::eventLoop()
     {
         //等待所监控文件描述符上有事件的产生
         int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
+        //EINTR错误的产生：当阻塞于某个慢系统调用的一个进程捕获某个信号且相应信号处理函数返回时，该系统调用可能返回一个EINTR错误。
+        //例如：在socket服务器端，设置了信号捕获机制，有子进程，
+        //当在父进程阻塞于慢系统调用时由父进程捕获到了一个有效信号时，内核会致使accept返回一个EINTR错误(被中断的系统调用)。
+        //在epoll_wait时，因为设置了alarm定时触发警告，导致每次返回-1，errno为EINTR，对于这种错误返回
+        //忽略这种错误，让epoll报错误号为4时，再次做一次epoll_wait
         if (number < 0 && errno != EINTR)
         {
             LOG_ERROR("%s", "epoll failure");

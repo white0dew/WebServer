@@ -208,6 +208,8 @@ bool http_conn::read_once()
     //LT读取数据
     if (0 == m_TRIGMode)
     {
+        //recv函数
+        //<0 出错 =0 连接关闭 >0 接收到数据大小
         bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
         m_read_idx += bytes_read;
 
@@ -226,7 +228,7 @@ bool http_conn::read_once()
             bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
             if (bytes_read == -1)
             {
-                //非阻塞ET模式下，需要一次性将数据读完
+                //非阻塞ET模式下，需要一次性将数据读完，无错
                 if (errno == EAGAIN || errno == EWOULDBLOCK)
                     break;
                 return false;
@@ -782,6 +784,7 @@ bool http_conn::process_write(HTTP_CODE ret)
     return true;
 }
 //处理http报文请求与报文响应
+//根据read/write的buffer进行报文的解析和响应
 void http_conn::process()
 {
     //NO_REQUEST，表示请求不完整，需要继续接收请求数据

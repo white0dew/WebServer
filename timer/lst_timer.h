@@ -107,10 +107,10 @@ public:
     void show_error(int connfd, const char *info);
 
 public:
-    static int *u_pipefd;
-    sort_timer_lst m_timer_lst;
-    static int u_epollfd;
-    int m_TIMESLOT;
+    static int *u_pipefd;//管道id
+    sort_timer_lst m_timer_lst;//升序链表定时器
+    static int u_epollfd;//epollfd
+    int m_TIMESLOT;//最小时间间隙
 };
 
 void cb_func(client_data *user_data);

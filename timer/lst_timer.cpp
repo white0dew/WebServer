@@ -194,13 +194,14 @@ void Utils::init(int timeslot)
 //对文件描述符设置非阻塞
 int Utils::setnonblocking(int fd)
 {
+    //fcntl可以获取/设置文件描述符性质
     int old_option = fcntl(fd, F_GETFL);
     int new_option = old_option | O_NONBLOCK;
     fcntl(fd, F_SETFL, new_option);
     return old_option;
 }
 
-//将内核事件表注册读事件，ET模式，选择开启EPOLLONESHOT
+//将内核事件表注册读事件，ET模式，是否选择开启EPOLLONESHOT
 void Utils::addfd(int epollfd, int fd, bool one_shot, int TRIGMode)
 {
     epoll_event event;
@@ -211,6 +212,8 @@ void Utils::addfd(int epollfd, int fd, bool one_shot, int TRIGMode)
     else
         event.events = EPOLLIN | EPOLLRDHUP;
 
+    //如果对描述符socket注册了EPOLLONESHOT事件，
+    //那么操作系统最多触发其上注册的一个可读、可写或者异常事件，且只触发一次。
     if (one_shot)
         event.events |= EPOLLONESHOT;
     epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);

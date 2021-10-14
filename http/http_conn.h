@@ -97,9 +97,9 @@ public:
     }
 	//初始化数据库读取线程
     void initmysql_result(connection_pool *connPool);
-	//时间事件类型
-    int timer_flag;
-    int improv;
+	
+    int timer_flag;//是否关闭连接
+    int improv;//是否正在处理数据中
 
 
 private:
@@ -180,9 +180,9 @@ private:
     int bytes_have_send;
     char *doc_root;
 
-    map<string, string> m_users;
-    int m_TRIGMode;
-    int m_close_log;
+    map<string, string> m_users;//用户名密码匹配表
+    int m_TRIGMode;//触发模式
+    int m_close_log;//是否开启日志
 
     char sql_user[100];
     char sql_passwd[100];

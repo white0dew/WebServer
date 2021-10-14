@@ -136,6 +136,7 @@ void threadpool<T>::run()
         //Reactor
         if (1 == m_actor_model)
         {
+            //IO事件类型：0为读
             if (0 == request->m_state)
             {
                 if (request->read_once())
@@ -163,7 +164,8 @@ void threadpool<T>::run()
                 }
             }
         }
-        //default:Proactor
+        //default:Proactor，线程池不需要进行数据读取，而是直接开始业务处理
+        //之前的操作已经将数据读取到http的read和write的buffer中了
         else
         {
             connectionRAII mysqlcon(&request->mysql, m_connPool);
