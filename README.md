@@ -117,7 +117,7 @@ Linux下基于C++的轻量级Web服务器注释、修改版本.
 
 # 联系
 你可以通过这个wechat联系我，我很乐意帮你解答问题：
-![wechat](https://oss1.aistar.cool/%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%9A%84%E8%80%B3%E8%AF%AD.jpg)
+![二进制的耳语](https://github.com/white0dew/WebServer/assets/49017390/9057ed37-5483-4498-b6dc-6d42674d1b10)
 
 
 致谢
