@@ -115,7 +115,13 @@ Linux下基于C++的轻量级Web服务器注释、修改版本.
 - [x] 关闭日志
 - [x] Reactor反应堆模型
 
+# 联系
+你可以通过这个wechat联系我，我很乐意帮你解答问题：
+![wechat](https://www.oss-images01.aistar.online/2024/04/a8e7bad088d8696b05da9c7e81191e95.jpg)
+
+
 致谢
 ------------
 Linux高性能服务器编程，游双著.
 源码来自：https://github.com/qinguoyi/TinyWebServer
+
